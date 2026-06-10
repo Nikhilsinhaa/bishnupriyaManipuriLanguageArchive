@@ -1,0 +1,65 @@
+import { supabase } from '@/lib/supabase';
+import { Card, CardContent } from '@/components/ui/card';
+import { Users, Globe, Map, BookOpen, ShieldAlert, ScrollText } from 'lucide-react';
+
+const iconMap: Record<string, React.ReactNode> = {
+  users: <Users className="h-5 w-5" />,
+  globe: <Globe className="h-5 w-5" />,
+  map: <Map className="h-5 w-5" />,
+  'book-open': <BookOpen className="h-5 w-5" />,
+  'shield-alert': <ShieldAlert className="h-5 w-5" />,
+  'scroll-text': <ScrollText className="h-5 w-5" />,
+};
+
+export async function LanguageStatsSection() {
+  const { data: stats } = await supabase
+    .from('language_stats')
+    .select('*')
+    .order('order', { ascending: true });
+
+  if (!stats || stats.length === 0) return null;
+
+  return (
+    <section className="py-16 sm:py-24 bg-[hsl(var(--secondary))]/50">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <div className="mb-3 inline-flex items-center gap-2">
+            <div className="h-px w-6 bg-primary/40" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              By the Numbers
+            </span>
+            <div className="h-px w-6 bg-primary/40" />
+          </div>
+          <h2 className="font-display text-3xl font-bold tracking-tight">Language at a Glance</h2>
+          <p className="mt-2 text-muted-foreground">
+            Key figures about the Bishnupriya Manipuri language today
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {stats.map((stat) => (
+            <Card
+              key={stat.id}
+              className="border-border/50 transition-all hover:border-primary/10 hover:shadow-sm"
+            >
+              <CardContent className="flex items-center gap-4 p-5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  {iconMap[stat.icon || ''] || <Globe className="h-5 w-5" />}
+                </div>
+                <div>
+                  <p className="font-display text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                  {stat.description && (
+                    <p className="mt-0.5 text-xs text-muted-foreground/70 leading-relaxed">
+                      {stat.description}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
