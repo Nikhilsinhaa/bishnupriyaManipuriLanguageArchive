@@ -15,7 +15,13 @@ export default async function ArticlesPage({
 }: {
   searchParams: { search?: string; category?: string; page?: string };
 }) {
-  const { data: categories } = await supabase.from('categories').select('*').order('name');
+  let categories = [];
+  try {
+    const { data } = await supabase.from('categories').select('*').order('name');
+    categories = data || [];
+  } catch {
+    // Supabase unavailable — render without category filters
+  }
 
   return (
     <div>
@@ -33,7 +39,7 @@ export default async function ArticlesPage({
         </div>
       </div>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <ArticlesFilters categories={categories || []} />
+        <ArticlesFilters categories={categories} />
         <Suspense fallback={<ArticlesSkeleton />}>
           <ArticlesList searchParams={searchParams} />
         </Suspense>

@@ -5,13 +5,19 @@ import { Button } from '@/components/ui/button';
 import { MapPin, ArrowRight, Scroll } from 'lucide-react';
 
 export async function FolkStoriesSection() {
-  const { data: stories } = await supabase
-    .from('folk_stories')
-    .select('*')
-    .eq('is_featured', true)
-    .not('published_at', 'is', null)
-    .order('published_at', { ascending: false })
-    .limit(3);
+  let stories;
+  try {
+    const result = await supabase
+      .from('folk_stories')
+      .select('*')
+      .eq('is_featured', true)
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
+      .limit(3);
+    stories = result.data;
+  } catch {
+    return null;
+  }
 
   if (!stories || stories.length === 0) return null;
 

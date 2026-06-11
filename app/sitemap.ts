@@ -12,16 +12,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/contact`, priority: 0.6 },
   ];
 
-  const { data: articles } = await supabase
-    .from('articles')
-    .select('slug, updated_at')
-    .not('published_at', 'is', null);
+  let articlePages: MetadataRoute.Sitemap = [];
+  try {
+    const { data: articles } = await supabase
+      .from('articles')
+      .select('slug, updated_at')
+      .not('published_at', 'is', null);
 
-  const articlePages = (articles || []).map((article) => ({
-    url: `${baseUrl}/article/${article.slug}`,
-    lastModified: article.updated_at || new Date(),
-    priority: 0.7,
-  }));
+    articlePages = (articles || []).map((article) => ({
+      url: `${baseUrl}/article/${article.slug}`,
+      lastModified: article.updated_at || new Date(),
+      priority: 0.7,
+    }));
+  } catch {
+    // Supabase unavailable — return static pages only
+  }
 
   return [...staticPages, ...articlePages];
 }

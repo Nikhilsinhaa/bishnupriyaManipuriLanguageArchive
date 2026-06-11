@@ -21,33 +21,45 @@ export async function ArticlesList({
 
   let categoryId: string | null = null;
   if (categorySlug) {
-    const { data: cat } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('slug', categorySlug)
-      .maybeSingle();
-    if (cat) categoryId = cat.id;
+    try {
+      const { data: cat } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', categorySlug)
+        .maybeSingle();
+      if (cat) categoryId = cat.id;
+    } catch {
+      // Category lookup failed
+    }
   }
 
-  let query = supabase
-    .from('articles')
-    .select('*, categories(name, slug)', { count: 'exact' })
-    .not('published_at', 'is', null)
-    .order('published_at', { ascending: false });
+  let articles = null;
+  let count = 0;
+  try {
+    let query = supabase
+      .from('articles')
+      .select('*, categories(name, slug)', { count: 'exact' })
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false });
 
-  if (categoryId) {
-    query = query.eq('category_id', categoryId);
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
+    }
+
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    query = query.range(from, to);
+
+    const result = await query;
+    articles = result.data;
+    count = result.count || 0;
+  } catch {
+    // Supabase unavailable
   }
-
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
-  }
-
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-  query = query.range(from, to);
-
-  const { data: articles, count } = await query;
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE);
 
   const buildPageUrl = (p: number) => {

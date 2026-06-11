@@ -3,12 +3,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Volume2, Quote } from 'lucide-react';
 
 export async function WordOfDay() {
-  const { data: word } = await supabase
-    .from('word_of_day')
-    .select('*')
-    .order('date', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let word;
+  try {
+    const result = await supabase
+      .from('word_of_day')
+      .select('*')
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    word = result.data;
+  } catch {
+    return null;
+  }
 
   if (!word) return null;
 

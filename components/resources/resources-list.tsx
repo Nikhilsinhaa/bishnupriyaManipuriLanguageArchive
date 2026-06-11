@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, type Resource } from '@/lib/supabase';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, ExternalLink, Download, BookOpen, Video, Headphones, Link2 } from 'lucide-react';
@@ -23,10 +23,16 @@ function getDownloadUrl(file_path: string): string {
 }
 
 export async function ResourcesList() {
-  const { data: resources } = await supabase
-    .from('resources')
-    .select('*')
-    .order('created_at', { ascending: false });
+  let resources: Resource[] | null;
+  try {
+    const result = await supabase
+      .from('resources')
+      .select('*')
+      .order('created_at', { ascending: false });
+    resources = result.data;
+  } catch {
+    resources = null;
+  }
 
   const categories = Array.from(
     new Set(

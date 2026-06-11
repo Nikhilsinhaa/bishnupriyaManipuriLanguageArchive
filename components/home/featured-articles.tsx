@@ -6,13 +6,19 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar } from 'lucide-react';
 
 export async function FeaturedArticles() {
-  const { data: articles } = await supabase
-    .from('articles')
-    .select('*, categories(name, slug)')
-    .eq('is_featured', true)
-    .not('published_at', 'is', null)
-    .order('published_at', { ascending: false })
-    .limit(3);
+  let articles;
+  try {
+    const result = await supabase
+      .from('articles')
+      .select('*, categories(name, slug)')
+      .eq('is_featured', true)
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
+      .limit(3);
+    articles = result.data;
+  } catch {
+    return null;
+  }
 
   if (!articles || articles.length === 0) return null;
 

@@ -16,45 +16,63 @@ interface ArticlePageProps {
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  const { data: article } = await supabase
-    .from('articles')
-    .select('title, meta_description, excerpt')
-    .eq('slug', params.slug)
-    .not('published_at', 'is', null)
-    .maybeSingle();
+  try {
+    const { data: article } = await supabase
+      .from('articles')
+      .select('title, meta_description, excerpt')
+      .eq('slug', params.slug)
+      .not('published_at', 'is', null)
+      .maybeSingle();
 
-  if (!article) {
+    if (!article) {
+      return {
+        title: 'Article Not Found',
+      };
+    }
+
     return {
-      title: 'Article Not Found',
+      title: article.title,
+      description: article.meta_description || article.excerpt || '',
+    };
+  } catch {
+    return {
+      title: 'Article',
     };
   }
-
-  return {
-    title: article.title,
-    description: article.meta_description || article.excerpt || '',
-  };
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  const { data: article } = await supabase
-    .from('articles')
-    .select('*, categories(name, slug)')
-    .eq('slug', params.slug)
-    .not('published_at', 'is', null)
-    .maybeSingle();
+  let article;
+  try {
+    const result = await supabase
+      .from('articles')
+      .select('*, categories(name, slug)')
+      .eq('slug', params.slug)
+      .not('published_at', 'is', null)
+      .maybeSingle();
+    article = result.data;
+  } catch {
+    notFound();
+  }
 
   if (!article) {
     notFound();
   }
 
-  const { data: relatedArticles } = await supabase
-    .from('articles')
-    .select('title, slug, excerpt, published_at')
-    .eq('category_id', article.category_id)
-    .neq('id', article.id)
-    .not('published_at', 'is', null)
-    .order('published_at', { ascending: false })
-    .limit(3);
+  let relatedArticles;
+  try {
+    const result = await supabase
+      .from('articles')
+      .select('title, slug, excerpt, published_at')
+      .eq('category_id', article.category_id)
+      .neq('id', article.id)
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
+      .limit(3);
+    relatedArticles = result.data;
+  } catch {
+    // Related articles are non-critical
+  }
 
   // Strip HTML tags for reading time calculation
   const textContent = article.content?.replace(/<[^>]*>/g, ' ') || '';
@@ -83,7 +101,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <div>
-      <Script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <Script id="article-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="border-b border-border/50 bg-[hsl(var(--secondary))]/50 py-12 sm:py-16">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Link href="/articles">

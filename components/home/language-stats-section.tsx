@@ -12,10 +12,16 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export async function LanguageStatsSection() {
-  const { data: stats } = await supabase
-    .from('language_stats')
-    .select('*')
-    .order('order', { ascending: true });
+  let stats;
+  try {
+    const result = await supabase
+      .from('language_stats')
+      .select('*')
+      .order('order', { ascending: true });
+    stats = result.data;
+  } catch {
+    return null;
+  }
 
   if (!stats || stats.length === 0) return null;
 
