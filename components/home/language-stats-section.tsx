@@ -26,22 +26,18 @@ export async function LanguageStatsSection() {
   if (!stats || stats.length === 0) return null;
 
   return (
-    <section className="py-16 sm:py-24 bg-[#F5F1E8] relative overflow-hidden">
-      {/* Subtle background border for academic feel */}
-      <div className="absolute top-0 left-0 w-full h-px bg-[#C9A66B]/30"></div>
-      <div className="absolute bottom-0 left-0 w-full h-px bg-[#C9A66B]/30"></div>
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+    <section className="py-16 sm:py-24 bg-[hsl(var(--secondary))]/50">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
           <div className="mb-3 inline-flex items-center gap-2">
-            <div className="h-px w-6 bg-[#C96A4A]/40" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C96A4A]">
+            <div className="h-px w-6 bg-primary/40" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               By the Numbers
             </span>
-            <div className="h-px w-6 bg-[#C96A4A]/40" />
+            <div className="h-px w-6 bg-primary/40" />
           </div>
-          <h2 className="font-display text-3xl font-bold tracking-tight text-[#2F5D50]">Language at a Glance</h2>
-          <p className="mt-2 text-gray-600">
+          <h2 className="font-display text-3xl font-bold tracking-tight">Language at a Glance</h2>
+          <p className="mt-2 text-muted-foreground">
             Key figures about the Bishnupriya Manipuri language today
           </p>
         </div>
@@ -50,17 +46,17 @@ export async function LanguageStatsSection() {
           {stats.map((stat) => (
             <Card
               key={stat.id}
-              className="border-[#C9A66B]/20 bg-white transition-all hover:border-[#C96A4A]/40 hover:shadow-sm rounded-sm"
+              className="border-border/50 transition-all hover:border-primary/10 hover:shadow-sm"
             >
               <CardContent className="flex items-center gap-4 p-5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F5F1E8] border border-[#C9A66B]/30 text-[#C96A4A]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   {iconMap[stat.icon || ''] || <Globe className="h-5 w-5" />}
                 </div>
                 <div>
-                  <p className="font-display text-2xl font-bold text-[#2F5D50]">{stat.value}</p>
-                  <p className="text-sm font-medium text-gray-700">{stat.label}</p>
+                  <p className="font-display text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
                   {stat.description && (
-                    <p className="mt-0.5 text-xs text-gray-500 leading-relaxed">
+                    <p className="mt-0.5 text-xs text-muted-foreground/70 leading-relaxed">
                       {stat.description}
                     </p>
                   )}

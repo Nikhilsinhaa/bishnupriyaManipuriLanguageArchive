@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
-import { Quote } from 'lucide-react';
+import { Volume2, Quote } from 'lucide-react';
 
 export async function WordOfDay() {
   let word;
@@ -19,57 +19,55 @@ export async function WordOfDay() {
   if (!word) return null;
 
   return (
-    <section className="py-16 sm:py-24 bg-[#F5F1E8]">
+    <section className="py-16 sm:py-24 bg-[hsl(var(--cream))]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
           <div className="mb-3 inline-flex items-center gap-2">
-            <div className="h-px w-6 bg-[#C96A4A]/40" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C96A4A]">
+            <div className="h-px w-6 bg-primary/40" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               Daily Vocabulary
             </span>
-            <div className="h-px w-6 bg-[#C96A4A]/40" />
+            <div className="h-px w-6 bg-primary/40" />
           </div>
-          <h2 className="font-display text-3xl font-bold tracking-tight text-gray-900">Word of the Day</h2>
+          <h2 className="font-display text-3xl font-bold tracking-tight">Word of the Day</h2>
+          <p className="mt-2 text-muted-foreground">Building vocabulary one word at a time</p>
         </div>
 
-        <Card className="mx-auto max-w-2xl border-[#C9A66B]/30 bg-white shadow-sm relative overflow-hidden">
-          {/* Subtle top border accent */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-[#C96A4A]"></div>
-          
+        <Card className="mx-auto max-w-2xl border-primary/10 bg-[hsl(var(--card))]">
           <CardContent className="p-8 sm:p-10">
             <div className="text-center">
               <div className="mb-4 flex items-center justify-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#2F5D50]">
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                   {word.part_of_speech || 'Word'}
                 </span>
               </div>
 
-              <h3 className="font-display text-4xl font-bold text-gray-900 sm:text-5xl">
+              <h3 className="font-display text-4xl font-bold text-foreground sm:text-5xl">
                 {word.word}
               </h3>
 
               {word.transliteration && (
-                <p className="mt-2 text-lg font-medium text-gray-500">
+                <p className="mt-2 text-lg font-medium text-muted-foreground">
                   /{word.transliteration}/
                 </p>
               )}
 
               {word.pronunciation_guide && (
-                <p className="mt-1 text-sm text-gray-400">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Pronounced: {word.pronunciation_guide}
                 </p>
               )}
 
-              <div className="mx-auto my-6 h-px w-16 bg-[#C9A66B]/30" />
+              <div className="mx-auto my-6 h-px w-16 bg-border" />
 
-              <p className="text-xl font-medium text-gray-800">{word.meaning}</p>
+              <p className="text-xl font-medium text-foreground">{word.meaning}</p>
 
               {word.example_sentence && (
-                <div className="mt-6 flex items-start gap-3 rounded-lg bg-[#F5F1E8]/50 p-4 text-left border border-[#C9A66B]/10">
-                  <Quote className="mt-0.5 h-4 w-4 shrink-0 text-[#C96A4A]" />
+                <div className="mt-6 flex items-start gap-3 rounded-lg bg-[hsl(var(--muted))]/50 p-4 text-left">
+                  <Quote className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <div>
-                    <p className="text-sm italic text-gray-700">{word.example_sentence}</p>
-                    <p className="mt-1 text-xs text-gray-500">Example usage</p>
+                    <p className="text-sm italic text-foreground">{word.example_sentence}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Example usage</p>
                   </div>
                 </div>
               )}
