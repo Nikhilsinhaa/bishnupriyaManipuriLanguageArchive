@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Calendar, ArrowLeft, Clock, Tag } from 'lucide-react';
 import Script from 'next/script';
 import { ManuscriptBorder } from '@/components/shared/manuscript-border';
+import { MarkdownContent } from '@/components/shared/markdown-content';
 
 interface ArticlePageProps {
   params: {
@@ -74,8 +75,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     // Related articles are non-critical
   }
 
-  // Strip HTML tags for reading time calculation
-  const textContent = article.content?.replace(/<[^>]*>/g, ' ') || '';
+  // Strip Markdown syntax for reading time calculation
+  const textContent = article.content?.replace(/[#*_`\[\]()>|~-]/g, '') || '';
   const readingTime = Math.ceil(textContent.split(/\s+/).filter(Boolean).length / 200) || 1;
 
   const jsonLd = {
@@ -151,7 +152,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         <ManuscriptBorder variant="top" />
         <article className="prose prose-lg max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-headings:font-display prose-headings:font-semibold">
-          <div dangerouslySetInnerHTML={{ __html: article.content || '' }} />
+          <MarkdownContent content={article.content || ''} />
         </article>
         <ManuscriptBorder variant="bottom" />
 

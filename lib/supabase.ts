@@ -18,6 +18,7 @@ export type Article = {
   title: string;
   slug: string;
   excerpt: string | null;
+  /** Article body rendered as Markdown */
   content: string | null;
   category_id: string | null;
   cover_image: string | null;
