@@ -81,3 +81,78 @@
     color: hsl(var(--primary));
   }
 }
+
+@layer components {
+  .parchment-bg {
+    background-image:
+      url('/images/patterns/manuscript-texture.jpg'),
+      linear-gradient(to bottom, hsl(var(--parchment)), hsl(var(--cream)));
+    background-size: 200px 200px, 100% 100%;
+    background-blend-mode: overlay, normal;
+  }
+
+  .dark .parchment-bg {
+    background-image:
+      linear-gradient(to bottom, hsl(var(--parchment)), hsl(var(--cream)));
+    background-size: 100% 100%;
+    background-blend-mode: normal;
+  }
+
+  .manuscript-divider {
+    @apply relative flex items-center justify-center gap-4 py-8;
+  }
+
+  .manuscript-divider::before,
+  .manuscript-divider::after {
+    @apply h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent;
+    content: '';
+  }
+
+  .archive-card {
+    @apply relative overflow-hidden rounded-xl border border-border/50 bg-card transition-all duration-300;
+    box-shadow:
+      0 1px 3px rgb(0 0 0 / 0.04),
+      0 4px 12px rgb(0 0 0 / 0.03);
+  }
+
+  .archive-card:hover {
+    border-color: hsl(var(--primary) / 0.2);
+    box-shadow:
+      0 4px 12px rgb(0 0 0 / 0.06),
+      0 12px 32px rgb(0 0 0 / 0.06);
+    transform: translateY(-2px);
+  }
+
+  .archive-card-featured {
+    @apply relative overflow-hidden rounded-xl border bg-card transition-all duration-300;
+    border-color: hsl(var(--primary) / 0.15);
+    box-shadow:
+      0 2px 8px rgb(0 0 0 / 0.05),
+      0 8px 24px rgb(0 0 0 / 0.04);
+  }
+
+  .archive-card-featured:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow:
+      0 8px 24px rgb(0 0 0 / 0.08),
+      0 20px 48px rgb(0 0 0 / 0.06);
+    transform: translateY(-3px);
+  }
+}
+
+@layer utilities {
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .scroll-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .count-up {
+    font-variant-numeric: tabular-nums;
+  }
+}

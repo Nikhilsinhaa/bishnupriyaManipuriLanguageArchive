@@ -5,10 +5,11 @@ import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, ArrowLeft, Clock, Tag } from 'lucide-react';
+import { Calendar, ArrowLeft, Clock, Tag, BookOpen } from 'lucide-react';
 import Script from 'next/script';
 import { ManuscriptBorder } from '@/components/shared/manuscript-border';
 import { MarkdownContent } from '@/components/shared/markdown-content';
+import { ReadingProgress } from '@/components/shared/reading-progress';
 
 interface ArticlePageProps {
   params: {
@@ -64,13 +65,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   try {
     const result = await supabase
       .from('articles')
-      .select('title, slug, excerpt, published_at')
+      .select('title, slug, excerpt, published_at, cover_image, categories(name, slug)')
       .eq('category_id', article.category_id)
       .neq('id', article.id)
       .not('published_at', 'is', null)
       .order('published_at', { ascending: false })
       .limit(3);
-    relatedArticles = result.data;
+    relatedArticles = result.data as Array<{
+      title: string; slug: string; excerpt: string | null; published_at: string | null;
+      cover_image: string | null; categories: { name: string; slug: string } | null;
+    }> | null;
   } catch {
     // Related articles are non-critical
   }
@@ -102,54 +106,99 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <div>
+      <ReadingProgress />
       <Script id="article-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="border-b border-border/50 bg-[hsl(var(--secondary))]/50 py-12 sm:py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <Link href="/articles">
-            <Button variant="ghost" className="mb-6 gap-2 pl-0 hover:pl-2 transition-all rounded-md text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Articles
-            </Button>
-          </Link>
-          <div className="flex flex-wrap items-center gap-3 mb-4">
-            {article.categories?.name && (
-              <Link href={`/articles?category=${article.categories.slug}`}>
-                <Badge className="gap-1 rounded-md">
-                  <Tag className="h-3 w-3" />
-                  {article.categories.name}
-                </Badge>
-              </Link>
-            )}
-            <span className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-              {article.published_at
-                ? new Date(article.published_at).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
-                : ''}
-            </span>
-            <span className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              {readingTime} min read
-            </span>
-          </div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            {article.title}
-          </h1>
-        </div>
-      </div>
 
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        {article.cover_image && (
+      {/* Full-width header with cover image */}
+      {article.cover_image && (
+        <div className="relative h-[40vh] sm:h-[50vh] lg:h-[60vh] overflow-hidden">
           <img
             src={article.cover_image}
             alt={article.title}
-            className="mb-8 w-full rounded-xl object-cover"
+            className="h-full w-full object-cover"
           />
-        )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0">
+            <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pb-10 sm:pb-14">
+              <Link href="/articles">
+                <Button variant="ghost" className="mb-4 gap-2 pl-0 hover:pl-2 transition-all rounded-md text-background/80 hover:text-foreground bg-background/20 backdrop-blur-sm hover:bg-background/30">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Articles
+                </Button>
+              </Link>
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                {article.categories?.name && (
+                  <Link href={`/articles?category=${article.categories.slug}`}>
+                    <Badge className="gap-1 rounded-md bg-primary/90 text-primary-foreground hover:bg-primary/90">
+                      <Tag className="h-3 w-3" />
+                      {article.categories.name}
+                    </Badge>
+                  </Link>
+                )}
+                <span className="flex items-center gap-1 text-sm text-background/80">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {article.published_at
+                    ? new Date(article.published_at).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
+                    : ''}
+                </span>
+                <span className="flex items-center gap-1 text-sm text-background/80">
+                  <Clock className="h-3.5 w-3.5" />
+                  {readingTime} min read
+                </span>
+              </div>
+              <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl sm:text-shadow-lg">
+                {article.title}
+              </h1>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {!article.cover_image && (
+        <div className="border-b border-border/50 bg-[hsl(var(--secondary))]/50 py-12 sm:py-16">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <Link href="/articles">
+              <Button variant="ghost" className="mb-6 gap-2 pl-0 hover:pl-2 transition-all rounded-md text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Articles
+              </Button>
+            </Link>
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              {article.categories?.name && (
+                <Link href={`/articles?category=${article.categories.slug}`}>
+                  <Badge className="gap-1 rounded-md">
+                    <Tag className="h-3 w-3" />
+                    {article.categories.name}
+                  </Badge>
+                </Link>
+              )}
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Calendar className="h-3.5 w-3.5" />
+                {article.published_at
+                  ? new Date(article.published_at).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  : ''}
+              </span>
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                {readingTime} min read
+              </span>
+            </div>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              {article.title}
+            </h1>
+          </div>
+        </div>
+      )}
+
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <ManuscriptBorder variant="top" />
         <article className="prose prose-lg max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-headings:font-display prose-headings:font-semibold">
           <MarkdownContent content={article.content || ''} />
@@ -158,19 +207,39 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {relatedArticles && relatedArticles.length > 0 && (
           <>
-            <Separator className="my-12" />
+            <Separator className="my-14" />
             <div>
-              <h3 className="font-display text-2xl font-bold mb-6">Related Articles</h3>
-              <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-8">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <h3 className="font-display text-2xl font-bold">Related Articles</h3>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {relatedArticles.map((rel) => (
-                  <Link key={rel.slug} href={`/article/${rel.slug}`} className="group block">
-                    <div className="rounded-lg border border-border/50 p-4 transition-all hover:bg-[hsl(var(--secondary))]/50">
-                      <h4 className="font-display font-semibold group-hover:text-primary transition-colors">
-                        {rel.title}
-                      </h4>
-                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                        {rel.excerpt || ''}
-                      </p>
+                  <Link key={rel.slug} href={`/article/${rel.slug}`} className="group">
+                    <div className="archive-card overflow-hidden">
+                      {rel.cover_image && (
+                        <div className="relative h-32 overflow-hidden">
+                          <img
+                            src={rel.cover_image}
+                            alt={rel.title}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-card/40 to-transparent" />
+                        </div>
+                      )}
+                      <div className="p-4">
+                        {rel.categories?.name && (
+                          <Badge variant="secondary" className="mb-2 text-xs rounded-md">
+                            {rel.categories.name}
+                          </Badge>
+                        )}
+                        <h4 className="font-display font-semibold leading-tight group-hover:text-primary transition-colors">
+                          {rel.title}
+                        </h4>
+                        <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                          {rel.excerpt || ''}
+                        </p>
+                      </div>
                     </div>
                   </Link>
                 ))}

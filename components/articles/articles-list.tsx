@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, ArrowRight } from 'lucide-react';
+import { Calendar, ArrowRight, Clock } from 'lucide-react';
 
 const PAGE_SIZE = 9;
 
@@ -16,7 +15,6 @@ export async function ArticlesList({
   const rawSearch = searchParams.search || '';
   const categorySlug = searchParams.category || '';
 
-  // Escape PostgREST filter metacharacters to prevent filter injection
   const search = rawSearch.replace(/[%_]/g, '\\$&');
 
   let categoryId: string | null = null;
@@ -81,44 +79,78 @@ export async function ArticlesList({
   return (
     <div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {articles.map((article) => (
-          <Link key={article.id} href={`/article/${article.slug}`} className="group">
-            <Card className="h-full border-border/50 transition-all hover:border-primary/20 hover:shadow-md">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  {article.categories?.name && (
-                    <Badge variant="secondary" className="text-xs rounded-md">
+        {articles.map((article) => {
+          const textContent = article.content?.replace(/[#*_`\[\]()>|~-]/g, '') || '';
+          const readingTime = Math.ceil(textContent.split(/\s+/).filter(Boolean).length / 200) || 1;
+
+          return (
+            <Link key={article.id} href={`/article/${article.slug}`} className="group">
+              <div className="archive-card h-full overflow-hidden">
+                {article.cover_image && (
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={article.cover_image}
+                      alt={article.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
+                    {article.categories?.name && (
+                      <div className="absolute top-3 left-3">
+                        <Badge className="gap-1 rounded-md bg-background/90 backdrop-blur-sm text-foreground border-border/30 hover:bg-background/90">
+                          {article.categories.name}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="p-5 sm:p-6">
+                  {!article.cover_image && article.categories?.name && (
+                    <Badge variant="secondary" className="mb-3 text-xs rounded-md">
                       {article.categories.name}
                     </Badge>
                   )}
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {article.published_at
-                      ? new Date(article.published_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
-                      : ''}
-                  </span>
+
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {article.published_at
+                        ? new Date(article.published_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })
+                        : ''}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {readingTime} min
+                    </span>
+                  </div>
+
+                  <h3 className="font-display text-lg font-semibold leading-tight group-hover:text-primary transition-colors">
+                    {article.title}
+                  </h3>
+                  <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                    {article.excerpt || 'Read more about this topic...'}
+                  </p>
+
+                  <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-all duration-200 group-hover:gap-2.5">
+                    Read article
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </div>
                 </div>
-                <h3 className="font-display text-xl font-semibold leading-tight group-hover:text-primary transition-colors">
-                  {article.title}
-                </h3>
-                <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                  {article.excerpt || 'Read more about this topic...'}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       {totalPages > 1 && (
-        <div className="mt-10 flex items-center justify-center gap-3">
+        <div className="mt-12 flex items-center justify-center gap-3">
           {page > 1 && (
             <Link href={buildPageUrl(page - 1)}>
-              <Button variant="outline" size="sm" className="rounded-md border-border/50">
+              <Button variant="outline" size="sm" className="rounded-lg border-border/50">
                 Previous
               </Button>
             </Link>
@@ -128,7 +160,7 @@ export async function ArticlesList({
           </span>
           {page < totalPages && (
             <Link href={buildPageUrl(page + 1)}>
-              <Button variant="outline" size="sm" className="rounded-md border-border/50 gap-1">
+              <Button variant="outline" size="sm" className="rounded-lg border-border/50 gap-1">
                 Next
                 <ArrowRight className="h-3 w-3" />
               </Button>

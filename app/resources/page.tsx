@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { ResourcesList } from '@/components/resources/resources-list';
+import { ResourcesFetcher } from '@/components/resources/resources-fetcher';
 import { ResourcesSkeleton } from '@/components/resources/resources-skeleton';
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default function ResourcesPage() {
       </div>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <Suspense fallback={<ResourcesSkeleton />}>
-          <ResourcesList />
+          <ResourcesFetcher />
         </Suspense>
       </div>
     </div>
