@@ -1,21 +1,25 @@
 'use client';
 
+import { ArrowRight, Calendar, ChevronLeft, ChevronRight, MapPin, Scroll } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, MapPin, Scroll, ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface Story {
+interface CarouselItem {
   id: string;
   title: string;
   slug: string;
-  excerpt: string | null;
-  region: string | null;
-  storyteller: string | null;
-  oral_history: boolean;
+  excerpt?: string | null;
+  cover_image?: string | null;
+  // Folk Story props
+  region?: string | null;
+  storyteller?: string | null;
+  oral_history?: boolean;
+  // Article props
+  categories?: { name: string; slug: string } | null;
+  published_at?: string | null;
 }
 
-const storyImages = [
+const fallbackImages = [
   '/images/hero/bm_dakula.png',
   '/images/hero/Raas-leela.png',
   '/images/hero/shaheed-sudheshna.jpg',
@@ -23,7 +27,7 @@ const storyImages = [
   '/images/hero/bishnupriya_manipuri_women.webp',
 ];
 
-export function FolkStoriesCarousel({ stories }: { stories: Story[] }) {
+export function FolkStoriesCarousel({ stories }: { stories: CarouselItem[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -51,64 +55,82 @@ export function FolkStoriesCarousel({ stories }: { stories: Story[] }) {
         className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 -mx-4 px-4 scrollbar-none"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {stories.map((story, i) => (
-          <Link
-            key={story.id}
-            href={`/article/${story.slug}`}
-            data-story-card
-            className="group snap-start shrink-0 w-[300px] sm:w-[340px]"
-          >
-            <div className="archive-card h-full overflow-hidden">
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={storyImages[i % storyImages.length]}
-                  alt={story.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="flex items-center gap-2 text-xs text-primary">
-                    <Scroll className="h-3.5 w-3.5" />
-                    <span className="font-medium">Folk Story</span>
-                    {story.region && (
-                      <>
-                        <span className="text-muted-foreground/60">&middot;</span>
-                        <MapPin className="h-3 w-3" />
-                        <span>{story.region}</span>
-                      </>
+        {stories.map((item, i) => {
+          const isArticle = !!item.categories || !!item.published_at;
+          const badgeText = item.categories?.name || (item.oral_history ? 'Oral History' : 'Folk Story');
+          const imageSrc = item.cover_image || fallbackImages[i % fallbackImages.length];
+
+          return (
+            <Link
+              key={item.id}
+              href={`/article/${item.slug}`}
+              data-story-card
+              className="group snap-start shrink-0 w-[300px] sm:w-[340px]"
+            >
+              <div className="archive-card h-full overflow-hidden flex flex-col">
+                <div className="relative h-48 overflow-hidden shrink-0">
+                  <img
+                    src={imageSrc}
+                    alt={item.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                      {isArticle ? <Calendar className="h-3.5 w-3.5" /> : <Scroll className="h-3.5 w-3.5" />}
+                      <span>{badgeText}</span>
+                      {item.region && (
+                        <>
+                          <span className="text-muted-foreground/60">&middot;</span>
+                          <MapPin className="h-3 w-3" />
+                          <span>{item.region}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {item.oral_history && !isArticle && (
+                    <div className="absolute top-4 right-4 rounded-full bg-primary/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
+                      Oral History
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+
+                    {item.storyteller && (
+                      <p className="mt-1.5 text-xs text-muted-foreground">
+                        As told by {item.storyteller}
+                      </p>
                     )}
+
+                    {item.published_at && (
+                      <p className="mt-1.5 text-xs text-muted-foreground">
+                        {new Date(item.published_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    )}
+
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">
+                      {item.excerpt || 'Click to read more...'}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-all duration-200 group-hover:gap-2.5">
+                    {isArticle ? 'Read article' : 'Read the story'}
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </div>
                 </div>
-                {story.oral_history && (
-                  <div className="absolute top-4 right-4 rounded-full bg-primary/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
-                    Oral History
-                  </div>
-                )}
               </div>
-
-              <div className="p-5">
-                <h3 className="font-display text-lg font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                  {story.title}
-                </h3>
-
-                {story.storyteller && (
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    As told by {story.storyteller}
-                  </p>
-                )}
-
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">
-                  {story.excerpt || 'Read this story from our oral tradition...'}
-                </p>
-
-                <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-all duration-200 group-hover:gap-2.5">
-                  Read the story
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {canScrollLeft && (
